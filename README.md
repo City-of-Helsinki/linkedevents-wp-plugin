@@ -22,6 +22,11 @@ And we will rewrite this to the page called `LinkedEvents`. That page then loads
 
 NOTE! You need to manually create the page called `LinkedEvents` AND set it to use the event template to get this working.
 
+### Additional constants
+
+* LINKEDEVENTS_WP_TITLE_REWRITE_ENABLED (bool), if wp_title should be filtered, includes/functions/rewrites.php:73
+* LINKEDEVENTS_TPREK_ID (string), fetch events for given tprekd ID, includes/class-hypering.php:14
+
 ## Contributors
 Juha Lehtonen, Jaakko Alajoki
 
