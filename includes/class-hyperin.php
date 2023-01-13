@@ -10,22 +10,33 @@ class LinkedEvents {
 
     const TRANSIENT_NAME = 'linkedevents-events';
 
+    public function tprekID() {
+      return defined('LINKEDEVENTS_TPREK_ID') ? LINKEDEVENTS_TPREK_ID : '';
+    }
 
     /**
-     * Update stores and save to transiend.
+     * Update stores and save to transient.
      *
      */
     public function updateStores() {
-        // TODO: Change this to the correct location (or allow passing it from outside)...
-        $response = $this->query('event', ['location' => 'tprek:51342', 'start' => 'today', 'end' => '2090-12-12', 'sort' => 'start_time'],'',true);
+        $response = $this->query(
+          'event',
+          [
+            'location' => $this->tprekID(),
+            'start' => 'today',
+            'end' => '2090-12-12',
+            'sort' => 'start_time'
+          ],
+          '',
+          true
+        );
+
         $stores = [];
 
         // If we get a response
         if ($response) {
             $stores = $response->data;
         }
-
-        //print_r($stores);
 
         // Extend with single store information.
         array_walk($stores, function(&$store) {
