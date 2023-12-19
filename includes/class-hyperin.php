@@ -148,9 +148,8 @@ class LinkedEvents
 			array_merge( $this->defaultQueryArgs( $query_url ), $args )
 		);
 
-		error_log($query_url);
-
-        $data = json_decode( file_get_contents( $query_url ) );
+		$response = wp_remote_retrieve_body( wp_remote_get( $query_url ) );
+        $data = $response ? json_decode( $response ) : false;
 
 		return $data ?: false;
     }
