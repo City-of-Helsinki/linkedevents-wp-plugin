@@ -75,7 +75,7 @@ add_action('init', '\Evermade\LinkedEvents\Rewrites\init_query_vars');
 * @return      string              The filtered title.
 */
 function fairapp_wp_title( $title, $sep ) {
-	return should_rewrite_wp_title() && is_api_item_title_set()
+	return should_rewrite_wp_title() && api_title_title()
 		? api_title_title() . ' | ' . get_bloginfo('title')
 		: $title;
 }
@@ -83,10 +83,6 @@ add_filter( 'wp_title', 'fairapp_wp_title', 100, 2 );
 
 function api_title_title(): string {
 	return $GLOBALS['api_item_title'] ?? '';
-}
-
-function is_api_item_title_set(): bool {
-	return ! empty( api_title_title() );
 }
 
 function should_rewrite_wp_title(): bool {
