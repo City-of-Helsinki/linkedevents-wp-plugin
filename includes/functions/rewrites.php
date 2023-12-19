@@ -65,7 +65,7 @@ function init() {
     $wp_rewrite->flush_rules(false);
 
 }
-add_action('init', '\Evermade\LinkedEvents\Rewrites\init');
+add_action('init', __NAMESPACE__ . '\\init');
 
 
 
@@ -78,7 +78,7 @@ function init_query_vars() {
     $wp->add_query_var('offer_id');
     $wp->add_query_var('news_item_id');
 }
-add_action('init', '\Evermade\LinkedEvents\Rewrites\init_query_vars');
+add_action('init', __NAMESPACE__ . '\\init_query_vars');
 
 
 
@@ -89,14 +89,15 @@ add_action('init', '\Evermade\LinkedEvents\Rewrites\init_query_vars');
 * @param       string    $sep      Optional separator.
 * @return      string              The filtered title.
 */
-function fairapp_wp_title( $title, $sep ) {
-	return should_rewrite_wp_title() && api_title_title()
-		? api_title_title() . ' | ' . get_bloginfo('title')
+function event_title_in_wp_title( $title ) {
+	return should_rewrite_wp_title() && api_item_title()
+		? api_item_title() . ' | ' . get_bloginfo('title')
 		: $title;
 }
-add_filter( 'wp_title', 'fairapp_wp_title', 100, 2 );
+add_filter( 'wp_title', __NAMESPACE__ . '\\event_title_in_wp_title', 100 );
+add_filter( 'document_title', __NAMESPACE__ . '\\event_title_in_wp_title', 100 );
 
-function api_title_title(): string {
+function api_item_title(): string {
 	return $GLOBALS['api_item_title'] ?? '';
 }
 
