@@ -75,17 +75,20 @@ add_action('init', '\Evermade\LinkedEvents\Rewrites\init_query_vars');
 * @return      string              The filtered title.
 */
 function fairapp_wp_title( $title, $sep ) {
-
-    if (should_rewrite_wp_title() && isset($GLOBALS['api_item_title'])) {
-        return $GLOBALS['api_item_title'] . ' | ' . get_bloginfo('title');
-    } else {
-        return $title;
-    }
-
+	return should_rewrite_wp_title() && is_api_item_title_set()
+		? api_title_title() . ' | ' . get_bloginfo('title')
+		: $title;
 }
 add_filter( 'wp_title', 'fairapp_wp_title', 100, 2 );
 
-function should_rewrite_wp_title() {
-  return defined('LINKEDEVENTS_WP_TITLE_REWRITE_ENABLED')
-      && LINKEDEVENTS_WP_TITLE_REWRITE_ENABLED;
+function api_title_title(): string {
+	return $GLOBALS['api_item_title'] ?? '';
+}
+
+function is_api_item_title_set(): bool {
+	return ! empty( api_title_title() );
+}
+
+function should_rewrite_wp_title(): bool {
+	return apply_filters( 'linked_events_is_wp_title_rewrite_enabled', false );
 }
