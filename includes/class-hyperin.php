@@ -2,6 +2,8 @@
 
 namespace Evermade\LinkedEvents;
 
+use stdClass;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	die();
 }
@@ -12,13 +14,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 class LinkedEvents
 {
 	protected string $tprek_id;
-	protected string $option_name;
+	protected string $transient_name;
 	protected string $api_url;
 
 	public function __construct( array $config )
 	{
 		$this->tprek_id = $config['tprek_id'] ?? '';
-		$this->option_name = $config['option_name'] ?? '';
+		$this->transient_name = $config['transient_name'] ?? '';
 		$this->api_url = trailingslashit($config['api_url'] ?? '');
 	}
 
@@ -27,9 +29,9 @@ class LinkedEvents
 		return $this->tprek_id;
     }
 
-    protected function optionName(): string
+    protected function transientName(): string
 	{
-		return $this->option_name;
+		return $this->transient_name;
     }
 
     protected function apiUrl(): string
@@ -41,7 +43,7 @@ class LinkedEvents
      * Update stores and save to transient.
      *
      */
-    public function updateStores()
+    public function updateStores(): array
 	{
         $response = $this->query(
           'event',
@@ -55,19 +57,16 @@ class LinkedEvents
           true
         );
 
-        $stores = [];
+        $stores = $response ? $response->data : array();
+		$enriched_stores = array();
+		foreach ( $stores as $store ) {
+			$store = $this->fetchStore($store->id);
+			if ( $store ) {
+				$enriched_stores[$store->id] = $store;
+			}
+		}
 
-        // If we get a response
-        if ($response) {
-            $stores = $response->data;
-        }
-
-        // Extend with single store information.
-        array_walk($stores, function(&$store) {
-            $store = $this->getStore($store->id);
-        });
-
-        // TODO: Hangle pagination
+        // TODO: Handle pagination
         // While the response returns a next key in the meta, append the data
         // from the response to $stores and make a new request against that
         // while ( $response->meta->next ) {
@@ -76,31 +75,47 @@ class LinkedEvents
         // }
 
         // Save to cache for an hour.
-        update_option( $this->optionName(), json_encode($stores) );
+		set_transient( $this->transientName(), $enriched_stores, HOUR_IN_SECONDS );
+
+		return $enriched_stores;
     }
 
     /**
      * Return list of stores.
      */
-    public function getStores()
+    public function getStores(): array
 	{
-        $cachedStores = get_option( $this->optionName() );
+        $stores = get_transient( $this->transientName() );
+		if ( is_array( $stores ) && $stores ) {
+			return $stores;
+		}
 
-		return $cachedStores != false ? json_decode( $cachedStores ) : array();
+		return $this->updateStores();
     }
 
     /**
      * Return single store
-     *
-     * @param String $storeId Store's id.
-     * @return Array Store details.
      */
-    public function getStore($storeId)
+    public function getStore( string $storeId ): stdClass
+	{
+		$stores = $this->getStores();
+		if ( ! empty( $stores[$storeId] ) ) {
+			return $stores[$storeId];
+		}
+
+        $store = $this->fetchStore( $storeId );
+
+		return $store ?: new stdClass();
+    }
+
+    /**
+     * Return single store
+     */
+    protected function fetchStore( string $storeId )
 	{
         $store = $this->query('event/'.$storeId);
-
-        if (!$store) {
-            return false;
+        if ( ! $store ) {
+            return;
         }
 
         // Fetch location information for given store (aka event)
