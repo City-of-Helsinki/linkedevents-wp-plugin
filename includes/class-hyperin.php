@@ -1,6 +1,10 @@
-<?php namespace Evermade\LinkedEvents;
+<?php
 
+namespace Evermade\LinkedEvents;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	die();
+}
 
 /**
  * Class for querying hyperin api.
