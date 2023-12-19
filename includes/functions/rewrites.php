@@ -16,6 +16,22 @@ if ( ! defined( 'ABSPATH' ) ) {
  * And we will rewrite this to the page called Single store. That page then loads the content from the API.
  */
 
+function get_linked_events_page_id( string $name ): int {
+	$posts = get_posts(
+	    array(
+	        'post_type'              => 'page',
+	        'title'                  => $name,
+	        'post_status'            => 'all',
+	        'numberposts'            => 1,
+	        'update_post_term_cache' => false,
+	        'update_post_meta_cache' => false,
+	        'orderby'                => 'post_date ID',
+	        'order'                  => 'ASC',
+	    )
+	);
+
+	return $posts ? $posts[0]->ID : 0;
+}
 
 
 /**
@@ -26,24 +42,21 @@ function init() {
     global $wp_rewrite, $wp;
 
     // Rewrite stores.
-    $page = get_page_by_title('LinkedEvents');
-    if ($page) {
-        $id = $page->ID;
-        add_rewrite_rule('^event/([a-zA-Z0-9:]+)/.*', 'index.php?page_id=' . $id . '&store_id=$matches[1]', 'top');
+    $page_id = get_linked_events_page_id('LinkedEvents');
+    if ( $page_id ) {
+        add_rewrite_rule('^event/([a-zA-Z0-9:]+)/.*', 'index.php?page_id=' . $page_id . '&store_id=$matches[1]', 'top');
     }
 
     // // Rewrite offers.
-    // $page = get_page_by_title('Single offer');
-    // if ($page) {
-    //     $id = $page->ID;
-    //     add_rewrite_rule('^tarjous/([0-9]+)/.*', 'index.php?page_id=' . $id . '&offer_id=$matches[1]', 'top');
+    // $page_id = get_linked_events_page_id('Single offer');
+    // if ( $page_id ) {
+    //     add_rewrite_rule('^tarjous/([0-9]+)/.*', 'index.php?page_id=' . $page_id . '&offer_id=$matches[1]', 'top');
     // }
 
     // // Rewrite news items.
-    // $page = get_page_by_title('Single news item');
-    // if ($page) {
-    //     $id = $page->ID;
-    //     add_rewrite_rule('^uutinen/([0-9]+)/.*', 'index.php?page_id=' . $id . '&news_item_id=$matches[1]', 'top');
+    // $page_id = get_linked_events_page_id('Single news item');
+    // if ( $page_id ) {
+    //     add_rewrite_rule('^uutinen/([0-9]+)/.*', 'index.php?page_id=' . $page_id . '&news_item_id=$matches[1]', 'top');
     // }
 
     // Flush rules (heavy operation).
