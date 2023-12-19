@@ -1,4 +1,10 @@
-<?php namespace Evermade\Swiss\Logic;
+<?php
+
+namespace Evermade\Swiss\Logic;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	die();
+}
 
 function getCurrentTimestamp(){
 	return time();
