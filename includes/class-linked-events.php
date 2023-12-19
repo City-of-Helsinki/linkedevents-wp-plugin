@@ -16,6 +16,7 @@ class Linked_Events
 	protected string $tprek_id;
 	protected string $transient_name;
 	protected string $api_url;
+	protected $default_location;
 
 	public function __construct( array $config )
 	{
@@ -45,39 +46,75 @@ class Linked_Events
      */
     public function updateStores(): array
 	{
-        $response = $this->query(
-          'event',
-          [
-            'location' => $this->tprekID(),
-            'start' => 'today',
-            'end' => '2090-12-12',
-            'sort' => 'start_time'
-          ],
-          '',
-          true
-        );
-
-        $stores = $response ? $response->data : array();
-		$enriched_stores = array();
-		foreach ( $stores as $store ) {
-			$store = $this->fetchStore($store->id);
-			if ( $store ) {
-				$enriched_stores[$store->id] = $store;
-			}
+        $response = $this->fetchStores();
+		if ( empty( $response->data ) ) {
+			return array();
 		}
 
-        // TODO: Handle pagination
-        // While the response returns a next key in the meta, append the data
-        // from the response to $stores and make a new request against that
-        // while ( $response->meta->next ) {
-        //     array_merge($stores, $response->data);
-        //     $results = $this->query($response->meta->next);
-        // }
+		$enriched_stores = $this->enrichStores( $response->data );
 
-        $this->cacheStores($enriched_stores);
+		$next_page_url = $response->meta->next;
+		while ( $next_page_url ) {
+			$next_response = $this->apiFetch( $next_page_url );
+
+			if ( $next_response->data ) {
+				$enriched_stores = array_merge(
+					$enriched_stores,
+					$this->enrichStores( $next_response->data )
+				);
+			}
+
+			$next_page_url = $next_response->meta->next;
+		}
+
+        $this->cacheStores( $enriched_stores );
 
 		return $enriched_stores;
     }
+
+	protected function enrichStores(array $stores): array
+	{
+		$enriched_stores = array();
+		foreach ( $stores as $store ) {
+			if ( $this->inDefaultLocation( $store ) ) {
+				if ( ! $this->default_location ) {
+					$this->default_location = $this->defaultLocation();
+				}
+
+				$store->location = $this->default_location;
+			} else {
+				$store->location = $this->fetchLocation( $store );
+			}
+
+			$enriched_stores[$store->id] = $store;
+		}
+
+		return $enriched_stores;
+	}
+
+	protected function inDefaultLocation( stdClass $store ): bool
+	{
+		if ( ! $this->tprekID() ) {
+			return false;
+		}
+
+		$store_location = (array) $store->location;
+		$default_location = 'place/' . $this->tprekID();
+
+		return false !== strpos( $store_location['@id'], $default_location );
+	}
+
+	protected function defaultLocation(): ?stdClass
+	{
+		return $this->tprekID() ? $this->query( 'place/' . $this->tprekID() ) : null;
+	}
+
+	protected function fetchLocation(stdClass $store): ?stdClass
+	{
+        $location = (array) $store->location;
+
+		return ! empty( $location['@id'] ) ? $this->apiFetch( $location['@id'] ) : null;
+	}
 
     /**
      * Return list of stores.
@@ -104,6 +141,19 @@ class Linked_Events
 		return $store ?: new stdClass();
     }
 
+	protected function fetchStores(): ?stdClass
+	{
+		$response = $this->query( 'event', array(
+			'location' => $this->tprekID(),
+            'start' => 'today',
+            'end' => '2090-12-12',
+            'sort' => 'start_time',
+			'page_size' => 30,
+		) );
+
+		return $response ?: null;
+	}
+
     /**
      * Return single store
      */
@@ -115,11 +165,7 @@ class Linked_Events
         }
 
         // Fetch location information for given store (aka event)
-        $locationObject = $store->location;
-        $locationURL = (array)$locationObject;
-        // Pass in entire URL to query
-        $location = $this->query('', [], $locationURL['@id']);
-        $store->location = $location;
+        $store->location = $this->fetchLocation( $store );
 
         // Map images.
         // $store = $store->store;
@@ -159,18 +205,20 @@ class Linked_Events
 			array_merge( $this->defaultQueryArgs( $query_url ), $args )
 		);
 
-		$response = wp_remote_retrieve_body( wp_remote_get( $query_url ) );
+		return $this->apiFetch( $query_url );
+    }
+
+	protected function apiFetch( string $url )
+	{
+		$response = wp_remote_retrieve_body( wp_remote_get( $url ) );
         $data = $response ? json_decode( $response ) : false;
 
 		return $data ?: false;
-    }
+	}
 
 	protected function defaultQueryArgs( string $query_url ): array
 	{
-		$args = array(
-			'format' => 'json',
-			'page_size' => 100,
-		);
+		$args = array( 'format' => 'json' );
 
 		$api_key = apply_filters(
 			'linked_events_api_key',
