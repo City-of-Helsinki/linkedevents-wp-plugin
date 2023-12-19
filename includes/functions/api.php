@@ -18,12 +18,25 @@ function handle_events_and_actions(): void {
 	add_action( 'admin_post_' . admin_sync_action(), __NAMESPACE__ . '\\sync_events' );
 }
 
+add_filter( 'linked_events_single_event_details', __NAMESPACE__ . '\\provide_single_event', 10, 2 );
+function provide_single_event( $event, string $event_id ) {
+	if ( ! $event_id ) {
+		return $event;
+	}
+
+	$api = apply_filters( 'linked_events_api', null );
+	if ( ! $api ) {
+		return $event;
+	}
+
+	return $api->getStore( $event_id );
+}
+
 add_filter( 'linked_events_api', __NAMESPACE__ . '\\provide_linked_events_api' );
-function provide_linked_events_api(): LinkedEvents
-{
+function provide_linked_events_api(): LinkedEvents {
 	return new LinkedEvents( array(
 		'tprek_id' => apply_filters( 'linked_events_tprek_id', '' ),
-		'option_name' => 'linkedevents-events',
+		'transient_name' => 'linkedevents-events',
 		'api_url' => 'https://api.hel.fi/linkedevents/v1',
 	) );
 }
@@ -63,9 +76,9 @@ function sync_events_button(): void {
  * @return void
  */
 function update_stores() {
-    $hyperIn = apply_filters( 'linked_events_api', null );
-	if ( $hyperIn ) {
-		$hyperIn->updateStores();
+    $api = apply_filters( 'linked_events_api', null );
+	if ( $api ) {
+		$api->updateStores();
 
 		return rest_ensure_response( array( 'success' => true ) );
 	} else {
@@ -80,13 +93,13 @@ function update_stores() {
  * @return void
  */
 function get_stores() {
-	$hyperIn = apply_filters( 'linked_events_api', null );
-	if ( ! $hyperIn ) {
+	$api = apply_filters( 'linked_events_api', null );
+	if ( ! $api ) {
 		return rest_ensure_response( array() );
 	}
 
     // Get stores.
-    $stores = $hyperIn->getStores();
+    $stores = $api->getStores();
     if ( ! $stores ) {
         return rest_ensure_response( array() );
     }
