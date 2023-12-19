@@ -70,6 +70,17 @@ function sync_events_button(): void {
 	);
 }
 
+add_action( 'linked_events_settings_page', __NAMESPACE__ . '\\render_events_count', 90 );
+function render_events_count(): void {
+	$api = apply_filters( 'linked_events_api', null );
+
+	printf(
+		'<p>%s: %d</p>',
+		esc_html__( 'Fetched events', 'linkedevents' ),
+		$api ? count( $api->getStores() ) : 0
+	);
+}
+
 /**
  * Get all stores. Not pagination or any other fancy stuff since there are not that many items.
  *

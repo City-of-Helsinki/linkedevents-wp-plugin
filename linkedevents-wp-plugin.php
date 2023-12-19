@@ -11,7 +11,7 @@
  * Plugin Name:       LinkedEvents integration
  * Plugin URI:        https://www.evermade.fi
  * Description:       Plugin providing LinkedEvents integration to theme.
- * Version:           2.0.0
+ * Version:           2.1.0
  * Author:            Juha Lehtonen, Jaakko Alajoki
  * Author URI:        https://www.evermade.fi
  * License:           GPL-2.0+
