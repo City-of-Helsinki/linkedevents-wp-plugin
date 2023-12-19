@@ -28,9 +28,8 @@ if ( ! defined( 'WPINC' ) ) {
 add_action( 'plugins_loaded', __NAMESPACE__ . '\\load_plugin_files' );
 function load_plugin_files(): void {
 	$includes = array(
-		'class-hyperin', // Core class for performing API queries.
+		'class-linked-events', // Core class for performing API queries.
 		'functions/rewrites', // Rewrites to create "virtual" store pages.
-		// 'functions/gforms', // Gravity Forms integration.
 		'functions/api', // Rest API endpoints.
 		'functions/cron', // Cron tasks.
 		'functions/menu-page', // Settings page
