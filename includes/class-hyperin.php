@@ -74,8 +74,7 @@ class LinkedEvents
         //     $results = $this->query($response->meta->next);
         // }
 
-        // Save to cache for an hour.
-		set_transient( $this->transientName(), $enriched_stores, HOUR_IN_SECONDS );
+        $this->cacheStores($enriched_stores);
 
 		return $enriched_stores;
     }
@@ -85,12 +84,9 @@ class LinkedEvents
      */
     public function getStores(): array
 	{
-        $stores = get_transient( $this->transientName() );
-		if ( is_array( $stores ) && $stores ) {
-			return $stores;
-		}
+        $stores = $this->cachedStores();
 
-		return $this->updateStores();
+		return $stores ?: $this->updateStores();
     }
 
     /**
@@ -190,5 +186,17 @@ class LinkedEvents
 			$args,
 			$query_url
 		);
+	}
+
+	protected function cacheStores(array $stores): void
+	{
+		set_transient( $this->transientName(), $stores, HOUR_IN_SECONDS );
+	}
+
+	protected function cachedStores(): array
+	{
+		$stores = get_transient( $this->transientName() );
+
+		return is_array( $stores ) ? $stores : array();
 	}
 }
