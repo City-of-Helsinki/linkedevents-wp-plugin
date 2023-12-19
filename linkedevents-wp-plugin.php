@@ -11,7 +11,7 @@
  * Plugin Name:       LinkedEvents integration
  * Plugin URI:        https://www.evermade.fi
  * Description:       Plugin providing LinkedEvents integration to theme.
- * Version:           1.0.0
+ * Version:           2.0.0
  * Author:            Juha Lehtonen, Jaakko Alajoki
  * Author URI:        https://www.evermade.fi
  * License:           GPL-2.0+
@@ -25,27 +25,22 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-// Rewrites to create "virtual" store pages.
-require plugin_dir_path( __FILE__ ) . 'includes/functions/rewrites.php';
+add_action( 'plugins_loaded', __NAMESPACE__ . '\\load_plugin_files' );
+function load_plugin_files(): void {
+	$includes = array(
+		'class-linked-events', // Core class for performing API queries.
+		'functions/rewrites', // Rewrites to create "virtual" store pages.
+		'functions/api', // Rest API endpoints.
+		'functions/cron', // Cron tasks.
+		'functions/menu-page', // Settings page
+		'functions/settings', // Settings
+	);
 
-// Gravity Forms integration.
-// require plugin_dir_path( __FILE__ ) . 'includes/functions/gforms.php';
+	$path = trailingslashit( plugin_dir_path( __FILE__ ) );
 
-// Rest API endpoints.
-require plugin_dir_path( __FILE__ ) . 'includes/functions/api.php';
+	foreach ( $includes as $file ) {
+		require_once "{$path}includes/{$file}.php";
+	}
 
-// Core class for performing API queries.
-require plugin_dir_path( __FILE__ ) . 'includes/class-hyperin.php';
-
-// Cron tasks.
-require plugin_dir_path( __FILE__ ) . 'includes/functions/cron.php';
-
-// Define an activation constant
-define('LINKEDEVENTS_ACTIVE', true);
-
-// For testing:
-// $hin = new \Evermade\HyperIn\HyperIn();
-// $offers = $hin->getOffers();
-// echo '<pre>';
-// print_r($offers);
-// exit;
+	define( 'LINKEDEVENTS_ACTIVE', true );
+}

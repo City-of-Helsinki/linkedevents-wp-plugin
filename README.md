@@ -2,18 +2,9 @@
 
 This plugin offers an abstraction to LinkedEvents API.
 
-## TODO
-
-* Displaying single & listed, as per Easton
-* Rename HyperIn things to LinkedEvents, remove all unused code
-
 ## Installation
 
-Define these two constants in your wp-config:
-
-* LINKEDEVENTS_APIKEY
-
-This plugin will setup virtual pages for stores. Content for single store pages are loaded from the HyperIn API.
+This plugin will setup virtual pages for stores. Content for single store pages are loaded from the LinkedEvents API.
 
 Plugin will create an url rewrite:
 ´/event/abc:123/eventname´
@@ -22,10 +13,12 @@ And we will rewrite this to the page called `LinkedEvents`. That page then loads
 
 NOTE! You need to manually create the page called `LinkedEvents` AND set it to use the event template to get this working.
 
-### Additional constants
+## Settings
 
-* LINKEDEVENTS_WP_TITLE_REWRITE_ENABLED (bool), if wp_title should be filtered, includes/functions/rewrites.php:73
-* LINKEDEVENTS_TPREK_ID (string), fetch events for given tprekd ID, includes/class-hypering.php:14
+Available at Dashboard > Linked events.
+
+- Insert 'TPREK_ID' to limit the api query to certain location.
+- Check 'Rewrite WP titles', if wp_title should be filtered to include event title
 
 ## Contributors
 Juha Lehtonen, Jaakko Alajoki
