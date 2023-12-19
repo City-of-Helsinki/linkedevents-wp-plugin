@@ -2,7 +2,7 @@
 
 namespace Evermade\LinkedEvents\Api;
 
-use Evermade\LinkedEvents\LinkedEvents;
+use Evermade\LinkedEvents\Linked_Events;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	die();
@@ -33,8 +33,8 @@ function provide_single_event( $event, string $event_id ) {
 }
 
 add_filter( 'linked_events_api', __NAMESPACE__ . '\\provide_linked_events_api' );
-function provide_linked_events_api(): LinkedEvents {
-	return new LinkedEvents( array(
+function provide_linked_events_api(): Linked_Events {
+	return new Linked_Events( array(
 		'tprek_id' => apply_filters( 'linked_events_tprek_id', '' ),
 		'transient_name' => 'linkedevents-events',
 		'api_url' => 'https://api.hel.fi/linkedevents/v1',
