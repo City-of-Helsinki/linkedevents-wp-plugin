@@ -1,8 +1,10 @@
-<?php namespace Evermade\LinkedEvents\Api;
-/**
- * Hooks for the rest API.
- */
+<?php
 
+namespace Evermade\LinkedEvents\Api;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	die();
+}
 
 
 /**
