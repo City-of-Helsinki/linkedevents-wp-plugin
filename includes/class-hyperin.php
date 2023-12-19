@@ -9,20 +9,40 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Class for querying hyperin api.
  */
-class LinkedEvents {
+class LinkedEvents
+{
+	protected string $tprek_id;
+	protected string $transient_name;
+	protected string $api_url;
 
+	public function __construct( array $config )
+	{
+		$this->tprek_id = $config['tprek_id'] ?? '';
+		$this->transient_name = $config['transient_name'] ?? '';
+		$this->api_url = trailingslashit($config['api_url'] ?? '');
+	}
 
-    const TRANSIENT_NAME = 'linkedevents-events';
+    protected function tprekID(): string
+	{
+		return $this->tprek_id;
+    }
 
-    public function tprekID() {
-      return defined('LINKEDEVENTS_TPREK_ID') ? LINKEDEVENTS_TPREK_ID : '';
+    protected function transientName(): string
+	{
+		return $this->transient_name;
+    }
+
+    protected function apiUrl(): string
+	{
+		return $this->api_url;
     }
 
     /**
      * Update stores and save to transient.
      *
      */
-    public function updateStores() {
+    public function updateStores()
+	{
         $response = $this->query(
           'event',
           [
@@ -56,36 +76,18 @@ class LinkedEvents {
         // }
 
         // Save to cache for an hour.
-        update_option($this::TRANSIENT_NAME, json_encode($stores));
-
+        update_option( $this->transientName(), json_encode($stores) );
     }
-
-
 
     /**
      * Return list of stores.
-     *
-     * NOTE: Parameters are deprecated. The list is always returned from cache
-     * and it always has the full info.
-     *
-     * @param Boolean $fullInfo DEPRECATED If set to true, full store details are provided. This perform multiple API requests so and the response will be cached.
-     * @param Boolean @enableCache DEPRECATED Disable/enable caching.
      */
-    public function getStores($fullInfo = false, $enableCache = true) {
+    public function getStores()
+	{
+        $cachedStores = get_option( $this->transientName() );
 
-        // Get from cache.
-        $cachedStores = get_option($this::TRANSIENT_NAME);
-
-        // Cached exists => return.
-        if ($cachedStores != false) {
-            return json_decode($cachedStores);
-        } else {
-            return [];
-        }
-
+		return $cachedStores != false ? json_decode( $cachedStores ) : array();
     }
-
-
 
     /**
      * Return single store
@@ -93,17 +95,13 @@ class LinkedEvents {
      * @param String $storeId Store's id.
      * @return Array Store details.
      */
-    public function getStore($storeId) {
-
+    public function getStore($storeId)
+	{
         $store = $this->query('event/'.$storeId);
-
-        // print_r($store);
-        // die();
 
         if (!$store) {
             return false;
         }
-
 
         // Fetch location information for given store (aka event)
         $locationObject = $store->location;
@@ -133,10 +131,7 @@ class LinkedEvents {
         // $store->offers = $this->getOffers($store->id);
 
         return $store;
-
     }
-
-
 
     /**
      * Perform API query.
@@ -146,31 +141,40 @@ class LinkedEvents {
      * @param String $overrideURL Optional override to query.
      * @return StdClass representation of the returned json. False on error.
      */
-    private function query($endPoint, $args = [], $overrideURL = '') {
+    private function query($endPoint, $args = [], $overrideURL = '')
+	{
+		$query_url = $overrideURL ?: $this->apiUrl() . $endPoint;
+		$query_url .= '?' . http_build_query(
+			array_merge( $this->defaultQueryArgs( $query_url ), $args )
+		);
 
-        $urlParams = '';
-        array_walk($args, function($value, $key) use (&$urlParams) {
-            $urlParams .= $key . '=' . $value . '&';
-        });
+		error_log($query_url);
 
+        $data = json_decode( file_get_contents( $query_url ) );
 
-            if ($overrideURL == '') {
-                $url = 'https://api.hel.fi/linkedevents/v1/'.$endPoint.'?'.$urlParams.'api_key='.LINKEDEVENTS_APIKEY.'&format=json&page_size=100';
-            } else {
-                $url = $overrideURL.'?'.$urlParams.'api_key='.LINKEDEVENTS_APIKEY.'&format=json&page_size=100';
-            }
-            $data = json_decode(file_get_contents($url));
-
-
-
-        if ($data) {
-            return $data;
-        } else {
-            return false;
-        }
-
+		return $data ?: false;
     }
 
+	protected function defaultQueryArgs( string $query_url ): array
+	{
+		$args = array(
+			'format' => 'json',
+			'page_size' => 100,
+		);
 
+		$api_key = apply_filters(
+			'linked_events_api_key',
+			defined( 'LINKEDEVENTS_APIKEY' ) ? LINKEDEVENTS_APIKEY : ''
+		);
 
+		if ( $api_key ) {
+			$args['api_key'] = $api_key;
+		}
+
+		return apply_filters(
+			'linked_events_query_default_args',
+			$args,
+			$query_url
+		);
+	}
 }
