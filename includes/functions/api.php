@@ -23,7 +23,7 @@ function provide_linked_events_api(): LinkedEvents
 {
 	return new LinkedEvents( array(
 		'tprek_id' => apply_filters( 'linked_events_tprek_id', '' ),
-		'transient_name' => 'linkedevents-events',
+		'option_name' => 'linkedevents-events',
 		'api_url' => 'https://api.hel.fi/linkedevents/v1',
 	) );
 }
