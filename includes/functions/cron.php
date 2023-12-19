@@ -1,4 +1,10 @@
-<?php namespace Evermade\LinkedEvents;
+<?php
+
+namespace Evermade\LinkedEvents;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	die();
+}
 
 // Schedule hourly event to update stores list.
 if (!wp_next_scheduled('linkedevents_cron_hook')) {
