@@ -27,10 +27,12 @@ function get_linked_events_page_id( string $name ): int {
 	        'update_post_meta_cache' => false,
 	        'orderby'                => 'post_date ID',
 	        'order'                  => 'ASC',
+			'fields'				 => 'ids',
+			'no_found_rows'			 => true,
 	    )
 	);
 
-	return $posts ? $posts[0]->ID : 0;
+	return $posts ? $posts[0] : 0;
 }
 
 
