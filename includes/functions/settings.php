@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 add_action( 'admin_init', __NAMESPACE__ . '\\register_plugin_settings' );
-add_action( 'linked_events_settings_page', __NAMESPACE__ . '\\render_settings_form' );
+add_action( 'linked_events_settings_page', __NAMESPACE__ . '\\render_settings_form', 10 );
 
 add_filter( 'linked_events_tprek_id', __NAMESPACE__ . '\\linked_events_tprek_id' );
 add_filter( 'linked_events_is_wp_title_rewrite_enabled', __NAMESPACE__ . '\\is_wp_title_rewrite_enabled' );
