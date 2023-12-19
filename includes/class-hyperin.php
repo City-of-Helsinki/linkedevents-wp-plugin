@@ -12,13 +12,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 class LinkedEvents
 {
 	protected string $tprek_id;
-	protected string $transient_name;
+	protected string $option_name;
 	protected string $api_url;
 
 	public function __construct( array $config )
 	{
 		$this->tprek_id = $config['tprek_id'] ?? '';
-		$this->transient_name = $config['transient_name'] ?? '';
+		$this->option_name = $config['option_name'] ?? '';
 		$this->api_url = trailingslashit($config['api_url'] ?? '');
 	}
 
@@ -27,9 +27,9 @@ class LinkedEvents
 		return $this->tprek_id;
     }
 
-    protected function transientName(): string
+    protected function optionName(): string
 	{
-		return $this->transient_name;
+		return $this->option_name;
     }
 
     protected function apiUrl(): string
@@ -76,7 +76,7 @@ class LinkedEvents
         // }
 
         // Save to cache for an hour.
-        update_option( $this->transientName(), json_encode($stores) );
+        update_option( $this->optionName(), json_encode($stores) );
     }
 
     /**
@@ -84,7 +84,7 @@ class LinkedEvents
      */
     public function getStores()
 	{
-        $cachedStores = get_option( $this->transientName() );
+        $cachedStores = get_option( $this->optionName() );
 
 		return $cachedStores != false ? json_decode( $cachedStores ) : array();
     }
