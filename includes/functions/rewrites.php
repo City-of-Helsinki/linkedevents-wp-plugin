@@ -1,4 +1,10 @@
-<?php namespace Evermade\LinkedEvents\Rewrites;
+<?php
+
+namespace Evermade\LinkedEvents\Rewrites;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	die();
+}
 
 /**
  * Content for single store pages are loaded from the LinkedEvents API. We need to create "virtual" pages
