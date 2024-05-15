@@ -218,7 +218,10 @@ class Linked_Events
 
 	protected function defaultQueryArgs( string $query_url ): array
 	{
-		$args = array( 'format' => 'json' );
+		$args = array(
+			'format' => 'json',
+			'super_event_type' => 'umbrella,none',
+		);
 
 		$api_key = apply_filters(
 			'linked_events_api_key',
